@@ -9,6 +9,7 @@ char* prompt_and_accept_input() {
   printf("Pman: >");
 
   // space required before format specifier in order to eat \n left in input buffer
+  // from the previous input
   scanf(" %500[^\n]", input_buffer);
 
   return input_buffer;
