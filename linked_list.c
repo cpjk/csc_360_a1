@@ -15,6 +15,30 @@ void set_node_val(Node *node, int val) {
   node -> val = val;
 }
 
+// delete the node containing val from the list, if it is present.
+// returns the new head of the list. returns NULL if
+// the new list is empty.
+Node *delete_node(Node *head, int val) {
+  if(head->val == val) { // if head is the val
+    Node *new_head = head->next;
+    free(head);
+    return new_head;
+  }
+
+  Node *prev = head;
+  Node *curr = head->next;
+  while(curr) { // if the val is not the head
+    if(curr->val == val) {
+      prev->next = curr->next;
+      free(curr);
+      return head;
+    }
+    prev = curr;
+    curr = curr->next;
+  }
+  return head;
+}
+
 Node *create_node(int val) {
   Node *new_node = malloc(sizeof(Node));
   new_node->val = val;
@@ -27,6 +51,7 @@ void print_node(Node *node) {
 }
 
 void print_list(Node *head) {
+  if(!head) return;
   Node *curr = head;
   while(1) {
     printf("%i\n", curr->val);
@@ -43,5 +68,19 @@ int main(int argc, char **argv) {
   list_append(linked_list, create_node(4));
   list_append(linked_list, create_node(5));
   list_append(linked_list, create_node(6));
+  print_list(linked_list);
+  printf("\n");
+  linked_list = delete_node(linked_list, 1);
+  print_list(linked_list);
+  linked_list = delete_node(linked_list, 3);
+  print_list(linked_list);
+  linked_list = delete_node(linked_list, 6);
+  linked_list = delete_node(linked_list, 2);
+  linked_list = delete_node(linked_list, 4);
+  linked_list = delete_node(linked_list, 4);
+  printf("\n");
+  print_list(linked_list);
+  linked_list = delete_node(linked_list, 5);
+  printf("\n");
   print_list(linked_list);
 }
