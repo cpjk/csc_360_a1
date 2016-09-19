@@ -39,6 +39,23 @@ Node *delete_node(Node *head, int val) {
   return head;
 }
 
+int find_node(Node *head, int val) {
+  if(head->val == val) { // if head is the val
+    return 1;
+  }
+
+  Node *prev = head;
+  Node *curr = head->next;
+  while(curr) { // if the val is not the head
+    if(curr->val == val) {
+      return 1;
+    }
+    prev = curr;
+    curr = curr->next;
+  }
+  return 0;
+}
+
 Node *create_node(int val) {
   Node *new_node = malloc(sizeof(Node));
   new_node->val = val;
@@ -68,19 +85,23 @@ void print_list(Node *head) {
 /*   list_append(linked_list, create_node(4)); */
 /*   list_append(linked_list, create_node(5)); */
 /*   list_append(linked_list, create_node(6)); */
-/*   print_list(linked_list); */
-/*   printf("\n"); */
-/*   linked_list = delete_node(linked_list, 1); */
-/*   print_list(linked_list); */
-/*   linked_list = delete_node(linked_list, 3); */
-/*   print_list(linked_list); */
-/*   linked_list = delete_node(linked_list, 6); */
-/*   linked_list = delete_node(linked_list, 2); */
-/*   linked_list = delete_node(linked_list, 4); */
-/*   linked_list = delete_node(linked_list, 4); */
-/*   printf("\n"); */
-/*   print_list(linked_list); */
-/*   linked_list = delete_node(linked_list, 5); */
-/*   printf("\n"); */
-/*   print_list(linked_list); */
+/*   find_node(linked_list, 1); */
+/*   find_node(linked_list, 2); */
+/*   find_node(linked_list, 6); */
+/*   find_node(linked_list, 0); */
+  /* print_list(linked_list); */
+  /* printf("\n"); */
+  /* linked_list = delete_node(linked_list, 1); */
+  /* print_list(linked_list); */
+  /* linked_list = delete_node(linked_list, 3); */
+  /* print_list(linked_list); */
+  /* linked_list = delete_node(linked_list, 6); */
+  /* linked_list = delete_node(linked_list, 2); */
+  /* linked_list = delete_node(linked_list, 4); */
+  /* linked_list = delete_node(linked_list, 4); */
+  /* printf("\n"); */
+  /* print_list(linked_list); */
+  /* linked_list = delete_node(linked_list, 5); */
+  /* printf("\n"); */
+  /* print_list(linked_list); */
 /* } */

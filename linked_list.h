@@ -8,3 +8,4 @@ void list_append();
 void set_node_val();
 Node *delete_node();
 void print_list(Node *);
+int find_node(Node *, int);
