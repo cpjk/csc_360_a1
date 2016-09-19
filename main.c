@@ -17,6 +17,7 @@ char *prompt_and_accept_input();
 char *pstat();
 int create_process();
 void flush_string();
+void bgkill();
 
 char *prompt_and_accept_input() {
   char *input_buffer = malloc(sizeof(char) * MAX_INPUT_LENGTH);
@@ -119,16 +120,7 @@ void free_ary(char **ary, int ary_len) {
   free(ary);
 }
 
-int run_bg(char **cmd_args, Node *proc_list) {
-  int pid = create_process(cmd_args);
-  if(pid < 0) { return -1; }
-  list_append(proc_list, create_node(pid));
-  return 0;
-}
-
-int run_cmd(char **cmd_ary, Node *proc_list) {
-  if(!cmd_ary[0]) { return -1; } // no command given
-
+int bg(char **cmd_ary, Node *proc_list) {
   char **cmd_args = malloc(sizeof(char*)*MAX_INPUT_LENGTH);
   flush_string_ary(cmd_args, MAX_INPUT_LENGTH);
 
@@ -140,26 +132,46 @@ int run_cmd(char **cmd_ary, Node *proc_list) {
     cmd_args[i-1] = arg; // add command to array
   }
 
+  int pid = create_process(cmd_args);
+  free_ary(cmd_args, MAX_INPUT_LENGTH);
+  if(pid < 0) { return -1; }
+  list_append(proc_list, create_node(pid));
+  return 0;
+}
+
+int run_cmd(char **cmd_ary, Node *proc_list) {
+  if(!cmd_ary[0]) { return -1; } // no command given
+
   if(strcmp(cmd_ary[0], "bg") == 0) { // run handler if command is bg
-    run_bg(cmd_args, proc_list);
+    bg(cmd_ary, proc_list);
+  }
+  else if(strcmp(cmd_ary[0], "bgkill") == 0) { // run handler if command is bg
+    bgkill(cmd_ary, proc_list);
   }
   else {
     printf("No handler function implemented for %s.\n", cmd_ary[0]);
   }
-  free_ary(cmd_args, MAX_INPUT_LENGTH);
   return 0;
 }
 
-/* void kill_job(Node *proc_list) { */
-/*   Node *curr = proc_list; */
-/*   while(curr->next) { */
-/*     if(curr->val != -1) { */
-/*       printf("killing pid %i\n", curr->val); */
-/*       kill(curr->val, 15); */
-/*        // handle undying process? */
-/*     } */
-/*   } */
-/* } */
+void bgkill(char **cmd_ary, Node *proc_list) {
+  if(!cmd_ary[1]) {
+    printf("No pid given\n. bgkill requires a pid.\n");
+    return;
+  }
+
+  int pid = atoi(cmd_ary[1]);
+
+  if(find_node(proc_list, pid)) {
+    printf("killing pid %i\n", pid);
+    kill(pid, 15);
+    delete_node(proc_list, pid);
+  }
+  else {
+    printf("No child process with pid %i.\n", pid);
+  }
+  // handle undying process?
+}
 
 int main(int argc, char **argv) {
   Node *proc_list = create_node(-1); // process list has a dummy head node
