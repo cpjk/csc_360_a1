@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "linked_list.h"
 
@@ -32,14 +33,18 @@ char *prompt_and_accept_input() {
 int create_process(char **args) {
   int pid = fork();
   if(pid  < 0) {
-    printf("Fork failed");
+    printf("Fork for %s failed.\n", args[0]);
     return -1;
   }
   else if(pid > 0) {
     return pid;
   }
   else {
+    errno = 0; // clear errno so errors will be noticed
     execvp(*args, args);
+    if(errno != 0) {
+      printf("there was an error executing %s\n", args[0]);
+    }
   }
 }
 
@@ -114,38 +119,58 @@ void free_ary(char **ary, int ary_len) {
   free(ary);
 }
 
-int run_cmd(char **cmd_ary) {
-  if(!cmd_ary[0]) { return -1; } // no command given
-  int i = 0;
-  for(i; i < NUM_CMDS; i++) { // check if command is in list of accepted commands
-
-    printf("comparing %s and %s.\n", cmd_ary[0], CMDS[i]);
-    if(strcmp(cmd_ary[0], CMDS[i]) == 0) { // run handler if command is valid
-      printf("command %s matched.\n", cmd_ary[0]);
-      // run handler
-      return 0;
-    }
-  }
-  printf("command %s is not accepted.\n", cmd_ary[0]);
-  return -1;
-  // check first arg
-  // if accepted command, call corresponding handler
-  // else print error and return -1
+int run_bg(char **cmd_args, Node *proc_list) {
+  int pid = create_process(cmd_args);
+  if(pid < 0) { return -1; }
+  list_append(proc_list, create_node(pid));
+  return 0;
 }
 
+int run_cmd(char **cmd_ary, Node *proc_list) {
+  if(!cmd_ary[0]) { return -1; } // no command given
+
+  char **cmd_args = malloc(sizeof(char*)*MAX_INPUT_LENGTH);
+  flush_string_ary(cmd_args, MAX_INPUT_LENGTH);
+
+  int i = 1;
+  for(i; cmd_ary[i]; i++) {
+    char *arg = malloc(sizeof(char)*strlen(cmd_ary[i])+1); // allocate space for new cmd
+    flush_string(arg, strlen(cmd_ary[i])+1);
+    strcpy(arg, cmd_ary[i]);
+    cmd_args[i-1] = arg; // add command to array
+  }
+
+  if(strcmp(cmd_ary[0], "bg") == 0) { // run handler if command is bg
+    run_bg(cmd_args, proc_list);
+  }
+  else {
+    printf("No handler function implemented for %s.\n", cmd_ary[0]);
+  }
+  free_ary(cmd_args, MAX_INPUT_LENGTH);
+  return 0;
+}
+
+/* void kill_job(Node *proc_list) { */
+/*   Node *curr = proc_list; */
+/*   while(curr->next) { */
+/*     if(curr->val != -1) { */
+/*       printf("killing pid %i\n", curr->val); */
+/*       kill(curr->val, 15); */
+/*        // handle undying process? */
+/*     } */
+/*   } */
+/* } */
+
 int main(int argc, char **argv) {
-  /* /1* char *args[] = {"./inf", "1", "2"}; *1/ */
-  /* /1* char *args[] = {"./print1"}; *1/ */
-  /* /1* int pid = create_process("./inf", args); *1/ */
-  /* int pid = create_process(args); */
-  /* sleep(5); */
-  /* kill(pid, 15); */
+  Node *proc_list = create_node(-1); // process list has a dummy head node
   while(1) {
     char *input;
     input = prompt_and_accept_input();
     char **cmd_ary = parse_input(input);
 
-    run_cmd(cmd_ary);
+    run_cmd(cmd_ary, proc_list);
+    printf("currently running processes: \n");
+    print_list(proc_list->next);
 
     free_ary(cmd_ary, MAX_INPUT_LENGTH);
     free(input);

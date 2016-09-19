@@ -61,26 +61,26 @@ void print_list(Node *head) {
 }
 
 
-int main(int argc, char **argv) {
-  Node *linked_list = create_node(1);
-  list_append(linked_list, create_node(2));
-  list_append(linked_list, create_node(3));
-  list_append(linked_list, create_node(4));
-  list_append(linked_list, create_node(5));
-  list_append(linked_list, create_node(6));
-  print_list(linked_list);
-  printf("\n");
-  linked_list = delete_node(linked_list, 1);
-  print_list(linked_list);
-  linked_list = delete_node(linked_list, 3);
-  print_list(linked_list);
-  linked_list = delete_node(linked_list, 6);
-  linked_list = delete_node(linked_list, 2);
-  linked_list = delete_node(linked_list, 4);
-  linked_list = delete_node(linked_list, 4);
-  printf("\n");
-  print_list(linked_list);
-  linked_list = delete_node(linked_list, 5);
-  printf("\n");
-  print_list(linked_list);
-}
+/* int main(int argc, char **argv) { */
+/*   Node *linked_list = create_node(1); */
+/*   list_append(linked_list, create_node(2)); */
+/*   list_append(linked_list, create_node(3)); */
+/*   list_append(linked_list, create_node(4)); */
+/*   list_append(linked_list, create_node(5)); */
+/*   list_append(linked_list, create_node(6)); */
+/*   print_list(linked_list); */
+/*   printf("\n"); */
+/*   linked_list = delete_node(linked_list, 1); */
+/*   print_list(linked_list); */
+/*   linked_list = delete_node(linked_list, 3); */
+/*   print_list(linked_list); */
+/*   linked_list = delete_node(linked_list, 6); */
+/*   linked_list = delete_node(linked_list, 2); */
+/*   linked_list = delete_node(linked_list, 4); */
+/*   linked_list = delete_node(linked_list, 4); */
+/*   printf("\n"); */
+/*   print_list(linked_list); */
+/*   linked_list = delete_node(linked_list, 5); */
+/*   printf("\n"); */
+/*   print_list(linked_list); */
+/* } */
