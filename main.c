@@ -9,6 +9,9 @@
 
 #define MAX_INPUT_LENGTH 500
 
+const char *CMDS[] = {"bg", "bglist", "bgkill", "bgstop", "bgstart", "pstat"};
+const unsigned int NUM_CMDS = 6;
+
 char *prompt_and_accept_input();
 char *pstat();
 int create_process();
@@ -44,6 +47,11 @@ char *pstat(char *pid) {
   return "";
 }
 
+void flush_string_ary(char **ary, int len) {
+  int i;
+  for(i = 0; i < len; i++) { ary[i] = 0; };
+}
+
 // iterate through string char by char
 // if not space, append to buffer
 // if char is space, ignore. if buffer has something in it, add that to command array and empty the buffer
@@ -54,7 +62,9 @@ char **parse_input(char *input) {
   char *buffer = malloc(sizeof(char)*buffer_len+1); // +1 is for \0
   flush_string(buffer, buffer_len+1);
 
-  char **cmd_array = malloc(sizeof(char*)*strlen(input));
+  // there could be MAX_INPUT_LENGTH commands that are each one letter in length
+  char **cmd_ary = malloc(sizeof(char*)*MAX_INPUT_LENGTH);
+  flush_string_ary(cmd_ary, MAX_INPUT_LENGTH);
   int cmd_index = 0;
 
   int i;
@@ -65,7 +75,7 @@ char **parse_input(char *input) {
         char *new_cmd = malloc(sizeof(char)*strlen(buffer)+1); // allocate space for new cmd
         flush_string(new_cmd, strlen(buffer)+1);
         strcpy(new_cmd, buffer);
-        cmd_array[cmd_index++] = new_cmd; // add command to array
+        cmd_ary[cmd_index++] = new_cmd; // add command to array
         flush_string(buffer, buffer_len + 1);
       }
     }
@@ -75,12 +85,15 @@ char **parse_input(char *input) {
     }
   }
 
-  if(strlen(buffer) > 0) {
-    printf("adding %s to cmd\n", buffer);
-    cmd_array[cmd_index] = buffer;
+  if(strlen(buffer) > 0) { // there is input left in the buffer after the last whitespace character
+    char *new_cmd = malloc(sizeof(char)*strlen(buffer)+1); // allocate space for new cmd
+    flush_string(new_cmd, strlen(buffer)+1);
+    strcpy(new_cmd, buffer);
+    cmd_ary[cmd_index] = new_cmd;
   }
 
-  return cmd_array;
+  free(buffer);
+  return cmd_ary;
 }
 
 void flush_string(char *str, int len) {
@@ -93,10 +106,31 @@ void print_ary(char **ary) {
   for(i = 0; ary[i]; i++) printf("%s\n", ary[i]);
 }
 
-void free_ary(char **ary) {
+void free_ary(char **ary, int ary_len) {
   int i;
-  for(i = 0; ary[i]; i++) free(ary[i]);
+  for(i = 0; i < ary_len; i++) {
+    if(ary[i]) { free(ary[i]); }
+  }
   free(ary);
+}
+
+int run_cmd(char **cmd_ary) {
+  if(!cmd_ary[0]) { return -1; } // no command given
+  int i = 0;
+  for(i; i < NUM_CMDS; i++) { // check if command is in list of accepted commands
+
+    printf("comparing %s and %s.\n", cmd_ary[0], CMDS[i]);
+    if(strcmp(cmd_ary[0], CMDS[i]) == 0) { // run handler if command is valid
+      printf("command %s matched.\n", cmd_ary[0]);
+      // run handler
+      return 0;
+    }
+  }
+  printf("command %s is not accepted.\n", cmd_ary[0]);
+  return -1;
+  // check first arg
+  // if accepted command, call corresponding handler
+  // else print error and return -1
 }
 
 int main(int argc, char **argv) {
@@ -109,9 +143,11 @@ int main(int argc, char **argv) {
   while(1) {
     char *input;
     input = prompt_and_accept_input();
-    char **cmd_array = parse_input(input);
-    print_ary(cmd_array);
-    free_ary(cmd_array);
+    char **cmd_ary = parse_input(input);
+
+    run_cmd(cmd_ary);
+
+    free_ary(cmd_ary, MAX_INPUT_LENGTH);
     free(input);
   }
 }
