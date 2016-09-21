@@ -1,5 +1,7 @@
 typedef struct Node {
   int val;
+  int status;
+  char *name;
   struct Node *next;
 } Node;
 

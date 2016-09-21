@@ -1,6 +1,7 @@
 #include "linked_list.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // append a Node to the end of the list starting with head
 void list_append(Node *head, Node *new_node) {
@@ -11,16 +12,33 @@ void list_append(Node *head, Node *new_node) {
   curr->next = new_node; // append Node to tail of list
 }
 
+void set_node_name(Node *node, char *name) {
+  int len = (strlen(name)+1);
+  char *node_name = malloc(sizeof(char)*len);
+  int i = 0;
+  for(i; i < len; i++) { // flush string
+    node_name[i] = '\0';
+  }
+  strcpy(node_name, name);
+  node->name = node_name;
+}
+
 void set_node_val(Node *node, int val) {
   node -> val = val;
+}
+
+void set_node_status(Node *node, int status) {
+  node -> status = status;
 }
 
 // delete the node containing val from the list, if it is present.
 // returns the new head of the list. returns NULL if
 // the new list is empty.
+// make sure to use the return value
 Node *delete_node(Node *head, int val) {
   if(head->val == val) { // if head is the val
     Node *new_head = head->next;
+    free(head->name);
     free(head);
     return new_head;
   }
@@ -30,6 +48,7 @@ Node *delete_node(Node *head, int val) {
   while(curr) { // if the val is not the head
     if(curr->val == val) {
       prev->next = curr->next;
+      free(curr->name);
       free(curr);
       return head;
     }
@@ -59,7 +78,9 @@ int find_node(Node *head, int val) {
 Node *create_node(int val) {
   Node *new_node = malloc(sizeof(Node));
   new_node->val = val;
+  new_node->name = NULL;
   new_node->next = NULL;
+  new_node->status = 0;
   return new_node;
 }
 
@@ -71,12 +92,14 @@ void print_list(Node *head) {
   if(!head) return;
   Node *curr = head;
   while(1) {
-    printf("%i\n", curr->val);
+    printf("%i. status: %i ", curr->val, curr->status);
+    if(curr->name) {
+      printf("%s\n", curr->name);
+    }
     if(!curr->next) return;
     curr = curr->next;
   }
 }
-
 
 /* int main(int argc, char **argv) { */
 /*   Node *linked_list = create_node(1); */
@@ -85,23 +108,10 @@ void print_list(Node *head) {
 /*   list_append(linked_list, create_node(4)); */
 /*   list_append(linked_list, create_node(5)); */
 /*   list_append(linked_list, create_node(6)); */
-/*   find_node(linked_list, 1); */
-/*   find_node(linked_list, 2); */
-/*   find_node(linked_list, 6); */
-/*   find_node(linked_list, 0); */
-  /* print_list(linked_list); */
-  /* printf("\n"); */
-  /* linked_list = delete_node(linked_list, 1); */
-  /* print_list(linked_list); */
-  /* linked_list = delete_node(linked_list, 3); */
-  /* print_list(linked_list); */
-  /* linked_list = delete_node(linked_list, 6); */
-  /* linked_list = delete_node(linked_list, 2); */
-  /* linked_list = delete_node(linked_list, 4); */
-  /* linked_list = delete_node(linked_list, 4); */
-  /* printf("\n"); */
-  /* print_list(linked_list); */
-  /* linked_list = delete_node(linked_list, 5); */
-  /* printf("\n"); */
-  /* print_list(linked_list); */
+/*   set_node_name(linked_list, "derp"); */
+/*   set_node_name(linked_list->next, "derp2"); */
+/*   set_node_status(linked_list, 1); */
+/*   linked_list = delete_node(linked_list, 2); */
+/*   linked_list = delete_node(linked_list, 1); */
+/*   print_list(linked_list); */
 /* } */
