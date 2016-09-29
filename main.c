@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/wait.h>
 
 #include "linked_list.h"
 
@@ -40,14 +41,14 @@ int create_process(char **args) {
     printf("Fork for %s failed.\n", args[0]);
     return -1;
   }
-  else if(pid > 0) {
+  else if(pid > 0) { // in parent
     return pid;
   }
   else {
     errno = 0; // clear errno so errors will be noticed
-    execvp(*args, args);
-    if(errno != 0) {
+    if(execvp(*args, args) < 0) { // execute child program
       printf("there was an error executing %s\n", args[0]);
+      exit(errno);
     }
   }
 }
@@ -143,15 +144,17 @@ int bg(char **cmd_ary, Node *proc_list) {
   }
 
   int pid = create_process(cmd_args);
-  if(pid < 0) {
+  if(pid < 0) { // error creating background process
     free_ary(cmd_args, MAX_INPUT_LENGTH);
+    printf("no background process was created\n");
     return -1;
   }
+  printf("creating new node\n");
+  fflush(stdout);
   Node *new_node = create_node(pid);
   set_node_name(new_node, *cmd_args);
   set_node_status(new_node, NODE_ACTIVE);
   list_append(proc_list, new_node);
-
   free_ary(cmd_args, MAX_INPUT_LENGTH);
   return 0;
 }
@@ -218,13 +221,26 @@ void bgkill(char **cmd_ary, Node *proc_list) {
   // handle undying process?
 }
 
+int reap_zombie_children(Node *proc_list) {
+  Node *curr = proc_list->next; // first actual node
+  while(curr) {
+    int status;
+    if(waitpid(curr->val, &status, WNOHANG) > 0) { // process exited
+      printf("child process with pid %i exited. removing from list.\n", curr->val);
+      delete_node(proc_list, curr->val);
+    }
+    curr = curr->next;
+  }
+}
+
 int main(int argc, char **argv) {
-  Node *proc_list = create_node(-1); // process list has a dummy head node
+  Node *proc_list = create_node(-1); // process list has a dummy head node with val -1
   while(1) {
     char *input;
     input = prompt_and_accept_input();
     char **cmd_ary = parse_input(input);
 
+    reap_zombie_children(proc_list);
     run_cmd(cmd_ary, proc_list);
 
     free_ary(cmd_ary, MAX_INPUT_LENGTH);
