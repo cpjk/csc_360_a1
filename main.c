@@ -126,6 +126,11 @@ void free_ary(char **ary, int ary_len) {
 // start a background process with the args given in cmd_ary
 // add the process' info to proc_list
 int bg(char **cmd_ary, Node *proc_list) {
+  if(!cmd_ary[1]) { // no argument was passed to Pman after "bg"
+    printf("Too few arguments to bg.\n");
+    return -1;
+  }
+
   char **cmd_args = malloc(sizeof(char*)*MAX_INPUT_LENGTH);
   flush_string_ary(cmd_args, MAX_INPUT_LENGTH);
 
