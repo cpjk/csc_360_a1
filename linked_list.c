@@ -89,14 +89,22 @@ void print_node(Node *node) {
 }
 
 void print_list(Node *head) {
+  int num_bg = 0;
+
   if(!head) return;
   Node *curr = head;
   while(1) {
-    printf("%i. status: %i ", curr->val, curr->status);
-    if(curr->name) {
-      printf("%s\n", curr->name);
+    if(curr->status) {
+      num_bg++;
+      printf("%i: ", curr->val);
+      if(curr->name) {
+        printf("%s\n", curr->name);
+      }
     }
-    if(!curr->next) return;
+    if(!curr->next) {
+      printf("Total background jobs: %i\n", num_bg);
+      return;
+    }
     curr = curr->next;
   }
 }
