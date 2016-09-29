@@ -21,6 +21,7 @@ void flush_string();
 void bgkill();
 void bglist();
 int bgstop();
+int bgstart();
 
 char *prompt_and_accept_input() {
   char *input_buffer = malloc(sizeof(char) * MAX_INPUT_LENGTH);
@@ -174,9 +175,37 @@ int run_cmd(char **cmd_ary, Node *proc_list) {
   else if(strcmp(cmd_ary[0], "bgstop") == 0) { // run handler if command is bgstop
     bgstop(cmd_ary, proc_list);
   }
+  else if(strcmp(cmd_ary[0], "bgstart") == 0) { // run handler if command is bgstart
+    bgstart(cmd_ary, proc_list);
+  }
   else {
     printf("%s: command not found\n", cmd_ary[0]);
   }
+  return 0;
+}
+
+int bgstart(char **cmd_ary, Node *proc_list) {
+  if(!cmd_ary[1]) {
+    printf("No pid given\n. bgstart requires a pid.\n");
+    return -1;
+  }
+
+  int pid = atoi(cmd_ary[1]);
+
+  Node *child = find_node(proc_list, pid);
+  if(child) {
+    if(child->status == NODE_ACTIVE) {
+      printf("Process with pid %i is already running\n", pid);
+      return -1;
+    }
+    printf("starting pid %i\n", pid);
+    kill(pid, SIGCONT);
+    set_node_status(proc_list, NODE_INACTIVE);
+  }
+  else {
+    printf("No child process with pid %i.\n", pid);
+  }
+
   return 0;
 }
 
