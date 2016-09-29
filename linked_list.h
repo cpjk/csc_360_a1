@@ -1,3 +1,6 @@
+#define NODE_ACTIVE 1
+#define NODE_INACTIVE 0
+
 typedef struct Node {
   int val;
   int status;
@@ -12,4 +15,4 @@ void set_node_name();
 void set_node_status();
 Node *delete_node();
 void print_list(Node *);
-int find_node(Node *, int);
+Node *find_node(Node *, int);

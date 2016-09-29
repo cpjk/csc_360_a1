@@ -58,21 +58,21 @@ Node *delete_node(Node *head, int val) {
   return head;
 }
 
-int find_node(Node *head, int val) {
+Node *find_node(Node *head, int val) {
   if(head->val == val) { // if head is the val
-    return 1;
+    return head;
   }
 
   Node *prev = head;
   Node *curr = head->next;
   while(curr) { // if the val is not the head
     if(curr->val == val) {
-      return 1;
+      return curr;
     }
     prev = curr;
     curr = curr->next;
   }
-  return 0;
+  return NULL;
 }
 
 Node *create_node(int val) {
@@ -80,7 +80,7 @@ Node *create_node(int val) {
   new_node->val = val;
   new_node->name = NULL;
   new_node->next = NULL;
-  new_node->status = 0;
+  new_node->status = NODE_INACTIVE;
   return new_node;
 }
 

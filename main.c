@@ -10,8 +10,6 @@
 #include "linked_list.h"
 
 #define MAX_INPUT_LENGTH 500
-#define NODE_ACTIVE 1
-#define NODE_INACTIVE 0
 
 const char *CMDS[] = {"bg", "bglist", "bgkill", "bgstop", "bgstart", "pstat"};
 const unsigned int NUM_CMDS = 6;
@@ -22,6 +20,7 @@ int create_process();
 void flush_string();
 void bgkill();
 void bglist();
+int bgstop();
 
 char *prompt_and_accept_input() {
   char *input_buffer = malloc(sizeof(char) * MAX_INPUT_LENGTH);
@@ -169,8 +168,11 @@ int run_cmd(char **cmd_ary, Node *proc_list) {
   else if(strcmp(cmd_ary[0], "bgkill") == 0) { // run handler if command is bgkill
     bgkill(cmd_ary, proc_list);
   }
-  else if(strcmp(cmd_ary[0], "bglist") == 0) { // run handler if command is bg
+  else if(strcmp(cmd_ary[0], "bglist") == 0) { // run handler if command is bglist
     bglist(proc_list);
+  }
+  else if(strcmp(cmd_ary[0], "bgstop") == 0) { // run handler if command is bgstop
+    bgstop(cmd_ary, proc_list);
   }
   else {
     printf("%s: command not found\n", cmd_ary[0]);
@@ -178,28 +180,43 @@ int run_cmd(char **cmd_ary, Node *proc_list) {
   return 0;
 }
 
+int bgstop(char **cmd_ary, Node *proc_list) {
+  if(!cmd_ary[1]) {
+    printf("No pid given\n. bgstop requires a pid.\n");
+    return -1;
+  }
+
+  int pid = atoi(cmd_ary[1]);
+  Node *child = find_node(proc_list, pid);
+  if(child) {
+    if(child->status == NODE_INACTIVE) {
+      printf("Process with pid %i is already stopped\n", pid);
+      return -1;
+    }
+    printf("stopping pid %i\n", pid);
+    kill(pid, SIGSTOP);
+    set_node_status(child, NODE_INACTIVE);
+  }
+  else {
+    printf("No child process with pid %i.\n", pid);
+  }
+
+  return 0;
+}
+
 void bglist(Node *proc_list) {
   int num_bg = 0;
 
   Node *curr = proc_list->next;
-  if(!curr) {
-    printf("Total background jobs: %i\n", num_bg);
-    return;
-  }
-  while(1) {
-    if(curr->status) {
-      num_bg++;
-      printf("%i: ", curr->val);
-      if(curr->name) {
-        printf("%s\n", curr->name);
-      }
-    }
-    if(!curr->next) {
-      printf("Total background jobs: %i\n", num_bg);
-      return;
+  while(curr) {
+    num_bg++;
+    printf("%i: ", curr->val);
+    if(curr->name) {
+      printf("%s\n", curr->name);
     }
     curr = curr->next;
   }
+  printf("Total background jobs: %i\n", num_bg);
 }
 
 void bgkill(char **cmd_ary, Node *proc_list) {
