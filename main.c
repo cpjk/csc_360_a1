@@ -88,6 +88,7 @@ int pstat(char **cmd_ary, Node *proc_list) {
   return 0;
 }
 
+
 void flush_string_ary(char **ary, int len) {
   int i;
   for(i = 0; i < len; i++) { ary[i] = 0; };
@@ -177,11 +178,9 @@ int bg(char **cmd_ary, Node *proc_list) {
   int pid = create_process(cmd_args);
   if(pid < 0) { // error creating background process
     free_ary(cmd_args, MAX_INPUT_LENGTH);
-    printf("no background process was created\n");
+    printf("There was an error executing the background process\n");
     return -1;
   }
-  printf("creating new node\n");
-  fflush(stdout);
   Node *new_node = create_node(pid);
   set_node_name(new_node, *cmd_args);
   set_node_status(new_node, NODE_ACTIVE);
@@ -291,7 +290,7 @@ void bgkill(char **cmd_ary, Node *proc_list) {
   int pid = atoi(cmd_ary[1]);
 
   if(find_node(proc_list, pid)) {
-    printf("killing pid %i\n", pid);
+    printf("Killing pid %i\n", pid);
     kill(pid, 15);
     delete_node(proc_list, pid);
   }
@@ -306,7 +305,7 @@ int reap_zombie_children(Node *proc_list) {
   while(curr) {
     int status;
     if(waitpid(curr->val, &status, WNOHANG) > 0) { // process exited
-      printf("child process with pid %i exited. removing from list.\n", curr->val);
+      printf("Child process with pid %i exited immediately.", curr->val);
       delete_node(proc_list, curr->val);
     }
     curr = curr->next;
