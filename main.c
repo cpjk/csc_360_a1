@@ -72,20 +72,20 @@ int pstat(char **cmd_ary, Node *proc_list) {
   char *read_buffer = malloc(sizeof(char) * MAX_PROC_FILE_LENGTH);
   flush_string(read_buffer, MAX_PROC_FILE_LENGTH);
 
-  char statfile[strlen(piddir) + strlen("/stat")];
+  char statfile[strlen(piddir) + strlen("/stat") + 1];
   strcpy(statfile, piddir);
   strncat(statfile, "/stat", strlen("/stat"));
 
-  FILE *f = fopen(statfile, "r");
-  if(f) {
+  FILE *statfp = fopen(statfile, "r");
+  if(statfp) {
     char c;
     int i;
 
-    for(i= 1; i <= MAX_PROC_FILE_LENGTH && (c = fgetc(f)) != EOF; i++ ) {
+    for(i= 1; i <= MAX_PROC_FILE_LENGTH && (c = fgetc(statfp)) != EOF; i++ ) {
       strncat(read_buffer, &c, 1);
     }
 
-    // tokenize the stat file
+    // tokenize and print info from the the stat file
     char *first_token = strtok(read_buffer, " ");
     for(i = 1; i < 52; i++ ) {
       char *token  = strtok(0, " ");
@@ -108,8 +108,40 @@ int pstat(char **cmd_ary, Node *proc_list) {
           break;
       }
     }
+
+    fclose(statfp);
   }
 
+  char statusfile[strlen(piddir) + strlen("/status")];
+  strcpy(statusfile, piddir);
+  strncat(statusfile, "/status", strlen("/status"));
+  flush_string(read_buffer, MAX_PROC_FILE_LENGTH);
+
+  FILE *statusfp = fopen(statusfile, "r");
+  if(statusfp) {
+    char c;
+    int i;
+
+    for(i= 1; i <= MAX_PROC_FILE_LENGTH && (c = fgetc(statusfp)) != EOF; i++ ) {
+      strncat(read_buffer, &c, 1);
+    }
+
+    // tokenize and print info from the the stat file
+    char *first_token = strtok(read_buffer, "\n");
+    for(i = 1; i < 50; i++ ) {
+      char *token  = strtok(0, "\n");
+      if(!token) break;
+      switch(i+1) {
+        case 40:
+          printf("%s\n", token);
+          break;
+        case 41:
+          printf("%s\n", token);
+          break;
+      }
+    }
+    fclose(statusfp);
+  }
 
   free(read_buffer);
   return 0;
