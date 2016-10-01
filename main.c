@@ -60,13 +60,19 @@ int pstat(char **cmd_ary, Node *proc_list) {
     printf("No pid supplied to pstat.\n");
     return -1;
   }
+  if(!find_node(proc_list, atoi(pid))){
+    printf("No child process exists with pid %s\n", pid);
+    return -1;
+  }
   const char* proc_dir = "/proc/";
-  char *read_buffer;
   char *stats[7];
 
   char piddir[strlen(proc_dir) + strlen(pid)]; // dir for this pid
   strcpy(piddir,proc_dir);
   strncat(piddir, pid, strlen(pid)); // piddir = /proc/<pid>
+
+  char *read_buffer = malloc(sizeof(char) * MAX_PROC_FILE_LENGTH);
+  flush_string(read_buffer, MAX_PROC_FILE_LENGTH);
 
   // comm
   char commfile[strlen(piddir) + strlen("/comm")];
@@ -75,20 +81,22 @@ int pstat(char **cmd_ary, Node *proc_list) {
 
   FILE *f = fopen(commfile, "r");
   if(f) {
-    read_buffer = malloc(sizeof(char) * MAX_PROC_FILE_LENGTH);
     char c;
     int i;
 
     for(i= 1; i <= MAX_PROC_FILE_LENGTH && (c = fgetc(f)) != EOF; i++ ) {
       strncat(read_buffer, &c, 1);
     }
+    // strip trailing newline
+    if(read_buffer[strlen(read_buffer)-1]=='\n') { read_buffer[strlen(read_buffer)-1] = '\0'; }
+    printf("comm: (%s)\n", read_buffer);
   }
-  printf("comm: %s\n", read_buffer);
 
+  free(read_buffer);
   return 0;
 }
 
-
+/* char **read_file */
 void flush_string_ary(char **ary, int len) {
   int i;
   for(i = 0; i < len; i++) { ary[i] = 0; };
@@ -305,7 +313,7 @@ int reap_zombie_children(Node *proc_list) {
   while(curr) {
     int status;
     if(waitpid(curr->val, &status, WNOHANG) > 0) { // process exited
-      printf("Child process with pid %i exited immediately.", curr->val);
+      printf("Child process with pid %i exited immediately.\n", curr->val);
       delete_node(proc_list, curr->val);
     }
     curr = curr->next;
