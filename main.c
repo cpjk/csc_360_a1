@@ -10,18 +10,19 @@
 #include "linked_list.h"
 
 #define MAX_INPUT_LENGTH 500
+#define MAX_PROC_FILE_LENGTH 500
 
 const char *CMDS[] = {"bg", "bglist", "bgkill", "bgstop", "bgstart", "pstat"};
 const unsigned int NUM_CMDS = 6;
 
 char *prompt_and_accept_input();
-char *pstat();
 int create_process();
 void flush_string();
 void bgkill();
 void bglist();
 int bgstop();
 int bgstart();
+int pstat();
 
 char *prompt_and_accept_input() {
   char *input_buffer = malloc(sizeof(char) * MAX_INPUT_LENGTH);
@@ -53,8 +54,38 @@ int create_process(char **args) {
   }
 }
 
-char *pstat(char *pid) {
-  return "";
+int pstat(char **cmd_ary, Node *proc_list) {
+  char *pid = cmd_ary[1];
+  if(!pid) {
+    printf("No pid supplied to pstat.\n");
+    return -1;
+  }
+  const char* proc_dir = "/proc/";
+  char *read_buffer;
+  char *stats[7];
+
+  char piddir[strlen(proc_dir) + strlen(pid)]; // dir for this pid
+  strcpy(piddir,proc_dir);
+  strncat(piddir, pid, strlen(pid)); // piddir = /proc/<pid>
+
+  // comm
+  char commfile[strlen(piddir) + strlen("/comm")];
+  strcpy(commfile, piddir);
+  strncat(commfile, "/comm", strlen("/comm"));
+
+  FILE *f = fopen(commfile, "r");
+  if(f) {
+    read_buffer = malloc(sizeof(char) * MAX_PROC_FILE_LENGTH);
+    char c;
+    int i;
+
+    for(i= 1; i <= MAX_PROC_FILE_LENGTH && (c = fgetc(f)) != EOF; i++ ) {
+      strncat(read_buffer, &c, 1);
+    }
+  }
+  printf("comm: %s\n", read_buffer);
+
+  return 0;
 }
 
 void flush_string_ary(char **ary, int len) {
@@ -177,6 +208,9 @@ int run_cmd(char **cmd_ary, Node *proc_list) {
   }
   else if(strcmp(cmd_ary[0], "bgstart") == 0) { // run handler if command is bgstart
     bgstart(cmd_ary, proc_list);
+  }
+  else if(strcmp(cmd_ary[0], "pstat") == 0) { // run handler if command is pstat
+    pstat(cmd_ary, proc_list);
   }
   else {
     printf("%s: command not found\n", cmd_ary[0]);
