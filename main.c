@@ -10,7 +10,7 @@
 #include "linked_list.h"
 
 #define MAX_INPUT_LENGTH 500
-#define MAX_PROC_FILE_LENGTH 500
+#define MAX_PROC_FILE_LENGTH 1000
 
 const char *CMDS[] = {"bg", "bglist", "bgkill", "bgstop", "bgstart", "pstat"};
 const unsigned int NUM_CMDS = 6;
@@ -64,22 +64,19 @@ int pstat(char **cmd_ary, Node *proc_list) {
     printf("No child process exists with pid %s\n", pid);
     return -1;
   }
-  const char* proc_dir = "/proc/";
-  char *stats[7];
 
-  char piddir[strlen(proc_dir) + strlen(pid)]; // dir for this pid
-  strcpy(piddir,proc_dir);
+  char piddir[strlen("/proc/") + strlen(pid)]; // dir for this pid
+  strcpy(piddir, "/proc/");
   strncat(piddir, pid, strlen(pid)); // piddir = /proc/<pid>
 
   char *read_buffer = malloc(sizeof(char) * MAX_PROC_FILE_LENGTH);
   flush_string(read_buffer, MAX_PROC_FILE_LENGTH);
 
-  // comm
-  char commfile[strlen(piddir) + strlen("/comm")];
-  strcpy(commfile, piddir);
-  strncat(commfile, "/comm", strlen("/comm"));
+  char statfile[strlen(piddir) + strlen("/stat")];
+  strcpy(statfile, piddir);
+  strncat(statfile, "/stat", strlen("/stat"));
 
-  FILE *f = fopen(commfile, "r");
+  FILE *f = fopen(statfile, "r");
   if(f) {
     char c;
     int i;
@@ -87,10 +84,32 @@ int pstat(char **cmd_ary, Node *proc_list) {
     for(i= 1; i <= MAX_PROC_FILE_LENGTH && (c = fgetc(f)) != EOF; i++ ) {
       strncat(read_buffer, &c, 1);
     }
-    // strip trailing newline
-    if(read_buffer[strlen(read_buffer)-1]=='\n') { read_buffer[strlen(read_buffer)-1] = '\0'; }
-    printf("comm: (%s)\n", read_buffer);
+
+    // tokenize the stat file
+    char *first_token = strtok(read_buffer, " ");
+    for(i = 1; i < 52; i++ ) {
+      char *token  = strtok(0, " ");
+      if(!token) break;
+      switch(i+1) {
+        case 2:
+          printf("comm: %s\n", token);
+          break;
+        case 3:
+          printf("state: %s\n", token);
+          break;
+        case 14:
+          printf("utime: %i\n", atoi(token) / sysconf(_SC_CLK_TCK));
+          break;
+        case 15:
+          printf("stime: %i\n", atoi(token) / sysconf(_SC_CLK_TCK));
+          break;
+        case 24:
+          printf("rss: %i\n", atoi(token) / sysconf(_SC_CLK_TCK));
+          break;
+      }
+    }
   }
+
 
   free(read_buffer);
   return 0;
