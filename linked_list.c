@@ -34,7 +34,7 @@ void set_node_status(Node *node, int status) {
 // delete the node containing val from the list, if it is present.
 // returns the new head of the list. returns NULL if
 // the new list is empty.
-// make sure to use the return value
+// make sure to use the return value as the new list
 Node *delete_node(Node *head, int val) {
   if(head->val == val) { // if head is the val
     Node *new_head = head->next;
@@ -58,6 +58,9 @@ Node *delete_node(Node *head, int val) {
   return head;
 }
 
+// Searches for a node with the given val in the linked list
+// pointed to by head.
+// Returns the target node if found. Otherwise, returns NULL
 Node *find_node(Node *head, int val) {
   if(head->val == val) { // if head is the val
     return head;
@@ -75,6 +78,7 @@ Node *find_node(Node *head, int val) {
   return NULL;
 }
 
+// Creates a new node and returns a pointer to it
 Node *create_node(int val) {
   Node *new_node = malloc(sizeof(Node));
   new_node->val = val;
@@ -88,6 +92,7 @@ void print_node(Node *node) {
   printf("%i\n", node->val);
 }
 
+// prints a list
 void print_list(Node *head) {
   int num_bg = 0;
 
@@ -108,18 +113,3 @@ void print_list(Node *head) {
     curr = curr->next;
   }
 }
-
-/* int main(int argc, char **argv) { */
-/*   Node *linked_list = create_node(1); */
-/*   list_append(linked_list, create_node(2)); */
-/*   list_append(linked_list, create_node(3)); */
-/*   list_append(linked_list, create_node(4)); */
-/*   list_append(linked_list, create_node(5)); */
-/*   list_append(linked_list, create_node(6)); */
-/*   set_node_name(linked_list, "derp"); */
-/*   set_node_name(linked_list->next, "derp2"); */
-/*   set_node_status(linked_list, 1); */
-/*   linked_list = delete_node(linked_list, 2); */
-/*   linked_list = delete_node(linked_list, 1); */
-/*   print_list(linked_list); */
-/* } */

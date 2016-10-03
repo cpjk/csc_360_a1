@@ -147,16 +147,13 @@ int pstat(char **cmd_ary, Node *proc_list) {
   return 0;
 }
 
-/* char **read_file */
 void flush_string_ary(char **ary, int len) {
   int i;
   for(i = 0; i < len; i++) { ary[i] = 0; };
 }
 
-// iterate through string char by char
-// if not space, append to buffer
-// if char is space, ignore. if buffer has something in it, add that to command array and empty the buffer
-//assumes NULL-terminated input string
+// Parse input into commands and return array holding command args
+// assumes NULL-terminated input string
 char **parse_input(char *input) {
   int input_len = strlen(input);
   int buffer_len = strlen(input);
@@ -186,7 +183,9 @@ char **parse_input(char *input) {
     }
   }
 
-  if(strlen(buffer) > 0) { // there is input left in the buffer after the last whitespace character
+  // there is input left in the buffer after the last whitespace character,
+  // add the buffer contents to cmd_ary
+  if(strlen(buffer) > 0) {
     char *new_cmd = malloc(sizeof(char)*strlen(buffer)+1); // allocate space for new cmd
     flush_string(new_cmd, strlen(buffer)+1);
     strcpy(new_cmd, buffer);
@@ -197,6 +196,7 @@ char **parse_input(char *input) {
   return cmd_ary;
 }
 
+// set all characters of str to NULL
 void flush_string(char *str, int len) {
   int i = 0;
   while(i < len) *(str + i++) = '\0';
@@ -290,9 +290,9 @@ int bgstart(char **cmd_ary, Node *proc_list) {
       printf("Process with pid %i is already running\n", pid);
       return -1;
     }
-    printf("starting pid %i\n", pid);
+    printf("Starting pid %i\n", pid);
     kill(pid, SIGCONT);
-    set_node_status(proc_list, NODE_INACTIVE);
+    set_node_status(child, NODE_ACTIVE);
   }
   else {
     printf("No child process with pid %i.\n", pid);
@@ -314,7 +314,7 @@ int bgstop(char **cmd_ary, Node *proc_list) {
       printf("Process with pid %i is already stopped\n", pid);
       return -1;
     }
-    printf("stopping pid %i\n", pid);
+    printf("Stopping pid %i\n", pid);
     kill(pid, SIGSTOP);
     set_node_status(child, NODE_INACTIVE);
   }
