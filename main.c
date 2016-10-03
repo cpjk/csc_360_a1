@@ -98,13 +98,13 @@ int pstat(char **cmd_ary, Node *proc_list) {
           printf("state: %s\n", token);
           break;
         case 14:
-          printf("utime: %i\n", atoi(token) / sysconf(_SC_CLK_TCK));
+          printf("utime: %li\n", atoi(token) / sysconf(_SC_CLK_TCK));
           break;
         case 15:
-          printf("stime: %i\n", atoi(token) / sysconf(_SC_CLK_TCK));
+          printf("stime: %li\n", atoi(token) / sysconf(_SC_CLK_TCK));
           break;
         case 24:
-          printf("rss: %i\n", atoi(token) / sysconf(_SC_CLK_TCK));
+          printf("rss: %s\n", token);
           break;
       }
     }
